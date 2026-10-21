@@ -46,7 +46,7 @@ jobs:
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.licenses=${{ env.LICENSES }}
         env:
-          DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
+          DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest
 
       - name: Login to GHCR
         uses: docker/login-action@v3
