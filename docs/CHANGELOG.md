@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+**🐛Fixes:**
+- Fixed `DeniedLogin: Auth Token isn't Valid` on startup even with a valid `auth_token`. `business.x.com` now returns a Cloudflare challenge page, so `tweety-ns`'s `load_auth_token` can no longer obtain `ct0`. The bot now logs in with the `auth_token` and a random `ct0` (X issues a real `ct0` in response), then reconnects so the `x-csrf-token` header matches the new cookie.
+- Session files (`*.tw_session`) are now stored under `DATA_PATH`, so they persist across Docker container recreation. Existing session files in the project root are no longer used; the bot logs in again once on first startup.
+
 ## 0.7.4 (September 27, 2026)
 
 **🐛Fixes:**
