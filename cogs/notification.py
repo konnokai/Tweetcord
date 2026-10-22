@@ -16,7 +16,7 @@ from src.log import setup_logger
 from src.notification.account_tracker import AccountTracker
 from src.permission import ADMINISTRATOR
 from src.db_function.readonly_db import connect_readonly
-from src.utils import get_accounts, get_lock, get_utcnow, validate_and_normalize_language
+from src.utils import get_accounts, get_lock, get_session_path, get_utcnow, validate_and_normalize_language
 from src.presence_updater import update_presence
 
 log = setup_logger(__name__)
@@ -74,7 +74,7 @@ class Notification(Cog_Extension):
             db.row_factory = aiosqlite.Row
             async with db.cursor() as cursor:
                 try:
-                    app = Twitter(account_used)
+                    app = Twitter(get_session_path(account_used))
                     await app.connect()
                     try:
                         new_user = await app.get_user_info(username)
@@ -90,7 +90,7 @@ class Notification(Cog_Extension):
                         if configs['auto_change_client']:
                             if configs['auto_unfollow'] or configs['auto_turn_off_notification']:
                                 old_client_used = match_user['client_used']
-                                old_app = Twitter(old_client_used)
+                                old_app = Twitter(get_session_path(old_client_used))
                                 
                                 try:
                                     await old_app.connect()
@@ -216,7 +216,7 @@ class Notification(Cog_Extension):
                                 await cursor.execute('SELECT client_used FROM user WHERE id = ?', (match_notifier['user_id'],))
                                 result = await cursor.fetchone()
                                 client_used = result['client_used']
-                                app = Twitter(client_used)
+                                app = Twitter(get_session_path(client_used))
                                 await app.connect()
                                 
                                 try:

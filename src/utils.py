@@ -20,6 +20,12 @@ def get_lock():
     return LockManager().lock
 
 
+# session 檔放在 DATA_PATH，Docker 重建 container 後才不會遺失
+# 只傳帳號名稱的話，tweety 會去工作目錄找 session，找不到就變成未登入
+def get_session_path(account_name: str) -> str:
+    return os.path.join(os.getenv('DATA_PATH'), account_name)
+
+
 def bool_to_str(boo: bool):
     return '1' if boo else '0'
 

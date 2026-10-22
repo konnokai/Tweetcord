@@ -18,7 +18,7 @@ from src.log import setup_logger
 from src.notification.display_tools import gen_embed, get_action, get_footer_name
 from src.notification.get_tweets import get_tweets
 from src.notification.utils import is_match_media_type, is_match_type, replace_emoji, get_parsed_tweet
-from src.utils import get_accounts, get_lock, get_utcnow
+from src.utils import get_accounts, get_lock, get_session_path, get_utcnow
 from src.db_function.readonly_db import connect_readonly
 from src.db_function.init_db import init_latest_tweet_on_startup
 
@@ -46,8 +46,7 @@ class AccountTracker():
         bot.loop.create_task(self.setup_tasks())
 
     async def _authenticate_account(self, account_name, account_token):
-        # session 檔放在 DATA_PATH，Docker 重建 container 後才不會遺失
-        app = Twitter(os.path.join(os.getenv('DATA_PATH'), account_name))
+        app = Twitter(get_session_path(account_name))
 
         if configs['use_existing_sessions_first']:
             try:

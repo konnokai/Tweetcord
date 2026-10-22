@@ -582,6 +582,37 @@ class TestNotificationAutocomplete(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(names, {'nasa'})
 
 
+class TestNotificationSessionPath(unittest.IsolatedAsyncioTestCase):
+    """/add notifier must read the session saved under DATA_PATH, or Twitter requests fail as unauthenticated."""
+
+    async def asyncSetUp(self):
+        self.temp_dir = tempfile.TemporaryDirectory()
+        create_test_db(os.path.join(self.temp_dir.name, 'tracked_accounts.db'))
+        self.env_patch = patch.dict(os.environ, {'DATA_PATH': self.temp_dir.name})
+        self.env_patch.start()
+
+        self.cog = Notification.__new__(Notification)
+        self.cog.bot = MagicMock()
+
+    async def asyncTearDown(self):
+        self.env_patch.stop()
+        self.temp_dir.cleanup()
+
+    async def test_add_notifier_loads_session_from_data_path(self):
+        itn = MagicMock()
+        itn.response.defer = AsyncMock()
+        itn.followup.send = AsyncMock()
+
+        mock_app = MagicMock()
+        mock_app.connect = AsyncMock()
+        mock_app.get_user_info = AsyncMock(side_effect=Exception('not found'))
+
+        with patch('cogs.notification.Twitter', return_value=mock_app) as mock_twitter:
+            await self.cog.notifier.callback(self.cog, itn, username='someone', channel=MagicMock(), account_used='clientA')
+
+        mock_twitter.assert_called_once_with(os.path.join(self.temp_dir.name, 'clientA'))
+
+
 class TestDiscordApiLimitsSimulation(unittest.IsolatedAsyncioTestCase):
     """Stress testing edge cases from Issue #98 (400+ channels, long names) against Discord constraints."""
 
